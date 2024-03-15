@@ -10,6 +10,7 @@ jupyter = "*"
 pandas = "*"
 matplotlib = "*"
 nltk = "*"
+seaborn = "*"
 
 [dev-packages]
 

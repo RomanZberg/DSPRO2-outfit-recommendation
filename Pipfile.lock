@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a6624cc4c7c5cab65439ced27fade17a5c870cc5383deb7c358b29e99856ef91"
+            "sha256": "8958aa3a3fcdc0c04088d0a9727a213bcc7df615227c58fc62b07c6f32bc7a07"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -518,6 +518,7 @@
                 "sha256:e14c250d1f9ea3989490225cc1a542781b095a18a19447fcf2b5eaf7d0ac5bd2"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.8'",
             "version": "==6.29.3"
         },
         "ipython": {
@@ -583,6 +584,9 @@
             "version": "==2.4"
         },
         "jsonschema": {
+            "extras": [
+                "format-nongpl"
+            ],
             "hashes": [
                 "sha256:7996507afae316306f9e2290407761157c6f78002dcf7419acb99822143d1c6f",
                 "sha256:85727c00279f5fa6bedbe6238d2aa6403bedd8b4864ab11207d07df3cc1b2ee5"
@@ -903,6 +907,7 @@
                 "sha256:fa93695d5c08544f4a0dfd0965f378e7afc410d8672816aff1e81be1f45dbf2e"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.9'",
             "version": "==3.8.3"
         },
         "matplotlib-inline": {
@@ -959,6 +964,7 @@
                 "sha256:fd5c9109f976fa86bcadba8f91e47f5e9293bd034474752e92a520f81c93dda5"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==3.8.1"
         },
         "notebook": {
@@ -1017,6 +1023,7 @@
                 "sha256:ffa75af20b44f8dba823498024771d5ac50620e6915abac414251bd971b4529f"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.9'",
             "version": "==1.26.4"
         },
         "overrides": {
@@ -1068,6 +1075,7 @@
                 "sha256:f9d3558d263073ed95e46f4650becff0c5e1ffe0fc3a015de3c79283dfbdb3df"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.9'",
             "version": "==2.2.1"
         },
         "pandocfilters": {
@@ -1681,6 +1689,15 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==0.18.0"
+        },
+        "seaborn": {
+            "hashes": [
+                "sha256:636f8336facf092165e27924f223d3c62ca560b1f2bb5dff7ab7fad265361987",
+                "sha256:93e60a40988f4d65e9f4885df477e2fdaff6b73a9ded434c1ab356dd57eefff7"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==0.13.2"
         },
         "send2trash": {
             "hashes": [
