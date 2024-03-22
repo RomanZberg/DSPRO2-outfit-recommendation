@@ -1,7 +1,9 @@
-from enum import Enum
+from dataclasses import dataclass
+from enum import Enum, IntEnum
 
 
-class ClothingItemCategory(Enum):
+@dataclass
+class ClothingItemCategory(IntEnum):
     Clothing = 2
     Dresses = 3
     Day_Dresses = 4

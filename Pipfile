@@ -11,6 +11,8 @@ pandas = "*"
 matplotlib = "*"
 nltk = "*"
 seaborn = "*"
+pyarrow = "*"
+fastparquet = "*"
 
 [dev-packages]
 
