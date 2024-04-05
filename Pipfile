@@ -21,6 +21,8 @@ tensorflow = "*"
 opencv-python = "*"
 pyarrow = "*"
 fastparquet = "*"
+colorthief = "*"
+sns = "*"
 
 [dev-packages]
 
