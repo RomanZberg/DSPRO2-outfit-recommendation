@@ -164,4 +164,10 @@ cython_debug/
 **/.pytest_cache
 
 
-datasets/*
+#datasets/*
+datasets/resized
+datasets/raw
+datasets/cleaned
+
+datasets/bg_removed/bg_removed_256x256
+
