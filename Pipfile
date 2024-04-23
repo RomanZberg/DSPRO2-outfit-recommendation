@@ -23,6 +23,8 @@ pyarrow = "*"
 fastparquet = "*"
 colorthief = "*"
 sns = "*"
+tqdm = "*"
+backgroundremover = "*"
 
 [dev-packages]
 
