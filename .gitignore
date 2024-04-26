@@ -170,4 +170,7 @@ datasets/raw
 datasets/cleaned
 
 datasets/bg_removed/bg_removed_256x256
+datasets/bg_removed/*
+!datasets/bg_removed/.gitkeep
 
+datasets/zalando-woman-outfit-dataset-raw
