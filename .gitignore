@@ -168,6 +168,9 @@ cython_debug/
 datasets/resized
 datasets/raw
 datasets/cleaned
+datasets/bg_removed
+datasets/images_256x256
+
 
 datasets/bg_removed/bg_removed_256x256
 datasets/bg_removed/*
