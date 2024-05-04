@@ -19,12 +19,13 @@ keras = "*"
 scikit-learn = "*"
 tensorflow = "*"
 opencv-python = "*"
-pyarrow = "*"
 fastparquet = "*"
 colorthief = "*"
 sns = "*"
 tqdm = "*"
 backgroundremover = "*"
+torch = "*"
+torchvision = "*"
 
 [dev-packages]
 
