@@ -13,7 +13,6 @@ def apply(input): # Input from Algorithmia can only be one string [123,45,167]
         pt = [int(i) for i in input] # convert number to integer array
     except Exception:
         return "Error in input. Run aborted."
-    # TODO: Recognize alternative input formats, such as "(156,43,222)".
 
    # NO import importlib & import_module('rgbcsv2rgbarray.py.txt') to avoid external dependencies.
 #### Paste in contents of rgb_combined_v01.csv.txt below: ###
