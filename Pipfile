@@ -26,6 +26,7 @@ tqdm = "*"
 backgroundremover = "*"
 torch = "*"
 torchvision = "*"
+wandb = "*"
 
 [dev-packages]
 
