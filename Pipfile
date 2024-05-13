@@ -28,7 +28,6 @@ backgroundremover = "*"
 torch = "*"
 torchvision = "*"
 wandb = "*"
-wandb = "*"
 [dev-packages]
 
 [requires]
