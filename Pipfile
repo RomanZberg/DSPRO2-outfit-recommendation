@@ -19,6 +19,7 @@ keras = "*"
 scikit-learn = "*"
 tensorflow = "*"
 opencv-python = "*"
+pyarrow = "*"
 fastparquet = "*"
 colorthief = "*"
 sns = "*"
@@ -27,7 +28,7 @@ backgroundremover = "*"
 torch = "*"
 torchvision = "*"
 wandb = "*"
-
+wandb = "*"
 [dev-packages]
 
 [requires]
