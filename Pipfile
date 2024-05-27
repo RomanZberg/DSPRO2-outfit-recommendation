@@ -28,6 +28,9 @@ backgroundremover = "*"
 torch = "*"
 torchvision = "*"
 wandb = "*"
+ray = {extras = ["tune"], version = "*"}
+optuna = "*"
+
 [dev-packages]
 
 [requires]
