@@ -198,9 +198,10 @@ def get_metrics(model, dataloader, loss_fn):
     with torch.no_grad():
         for X, y in tqdm(dataloader, desc='Validation', total=num_batches):
             pred = model(X)
-            targets.extend(y.squeeze().cpu().to(int).numpy())
-            predictions.extend(pred.squeeze().round().cpu().to(int).numpy())
-            predictions_original.extend(pred.squeeze().cpu().to(float).numpy())
+
+            targets.extend(y.squeeze(1).cpu().to(int).numpy())
+            predictions.extend(pred.squeeze(1).round().cpu().to(int).numpy())
+            predictions_original.extend(pred.squeeze(1).cpu().to(float).numpy())
 
     targets = torch.tensor(targets)
     predictions = torch.tensor(predictions)
