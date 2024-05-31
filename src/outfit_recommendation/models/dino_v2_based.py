@@ -1,6 +1,7 @@
 from torch import nn
 import torch
 
+
 class OutfitClassifier(nn.Module):
 
     @property
@@ -78,3 +79,7 @@ class OutfitClassifier(nn.Module):
         self.counter += 1
 
         return self._trainable_model(batch_features)
+
+    @staticmethod
+    def create_from_state_dict(self):
+        pass
