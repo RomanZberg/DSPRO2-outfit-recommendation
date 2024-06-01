@@ -82,7 +82,7 @@ class OutfitClassifier(nn.Module):
 
     @staticmethod
     def create_from_pth_file(pth_file_path, device):
-        checkpoint = torch.load(pth_file_path)
+        checkpoint = torch.load(pth_file_path, map_location=device)
         best_config = checkpoint['hyper_parameters']
 
         return OutfitClassifier(

@@ -178,3 +178,4 @@ datasets/*
 #!datasets/bg_removed/.gitkeep
 
 #datasets/zalando-woman-outfit-dataset-raw
+trained_models
