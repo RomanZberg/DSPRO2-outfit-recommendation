@@ -165,7 +165,7 @@ if __name__ == "__main__":
     main(
         pth_file='../trained_models/best_model_median_threshold.pth',
         testing_dataset_path='../datasets/imageBasedModel/polyvore/median_threshold_eb26e630100b98397deda54fa4a0bb95929479bc30e83cbfa72424b7c1e6e178/polyvore_test_6b046cdf467634343bb4fdd8fbdbe02a3746645c7c9108242228da408c97f435.parquet',
-        zalando_dataset_path='../datasets/imageBasedModel/zalando/zalando_ea4bf73acd0119c31a8a708bce2a2b302e72c1ecebc7c2265ee80cff3a15ed0a',
+        zalando_dataset_path='../datasets/imageBasedModel/zalando/zalando_ea4bf73acd0119c31a8a708bce2a2b302e72c1ecebc7c2265ee80cff3a15ed0a.parquet',
         polyvore_datasets_folder_root_path='../datasets',
         zalando_datasets_folder_root_path='../datasets/imageBasedModel/zalando'
     )
