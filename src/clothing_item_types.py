@@ -14,7 +14,7 @@ accessories_en: List[str] = [
 outerwear_en: List[str] = [
     "anorak", "battledress", "blazer", "cape", "cardigan",
     "cloak", "coat", "coveralls", "cowboy hat", "cummerbund", "dashiki", "dinner jacket",
-    "flak jacket", "fur coat",  "gaiters", "gloves", "gown", "hazmat suit",
+    "flak jacket", "fur coat", "gaiters", "gloves", "gown", "hazmat suit",
     "hoodie", "hospital gown", "housecoat", "jacket", "lab coat", "leather jacket",
     "life jacket", "overcoat", "overshirt", "parka", "pea coat", "raincoat", "robe",
     "shawl", "smock", "spacesuit", "suit", "sweater", "sweatshirt", "sweatsuit",
@@ -52,7 +52,7 @@ accessories_de: List[str] = [
     'lendenschurz', 'strümpfe', 'hosenträger', 'träger', 'handtasche', 'ascot-krawatte', 'schal',
     'perücke', 'geldbörse', 'schleife', 'revers', 'baskenmütze', 'bandanna', 'sonnenbrille', 'schnalle',
     'klettverschluss', 'krawatte', 'manschette', 'hut', 'taschentuch', 'dessous', "handtasche", "sonnenbrille",
-    "umhängetasche"
+    "umhängetasche", "gürteltasche"
 ]
 
 outerwear_de: List[str] = [
@@ -74,7 +74,7 @@ innerwear_de: List[str] = [
 bottomwear_de: List[str] = [
     "cargohose", "chino hose", "hose", "jeggings", "jeans", "latzhose", "leggings",
     "shorts", "sportleggings", "treggings", "stoffhose", "jogginghose", "sporthose", "sweatjacke", "minirock",
-    "lederhose", "skihose", "chinos", "stoffhose"
+    "lederhose", "skihose", "chinos", "stoffhose", "maxirock"
 ]
 
 shoes_de: List[str] = [
@@ -82,7 +82,8 @@ shoes_de: List[str] = [
     "overknees", "sneaker", "stiefel", "stiefeletten", "veloursleder boots", "winterschuhe", "laufschuh",
     "stiefelette", "plateaus tiefelette", "plateau stiefel", "schnürstiefelette", "pantolette", "hausschuh",
     "wanderschuhe",
-    "sandalette", "cowboy-/bikerboot", "snowboot/winterstiefel", "skateschuh", "badesandale"
+    "sandalette", "cowboy-/bikerboot", "snowboot/winterstiefel", "skateschuh", "badesandale", "plateaustiefelette",
+    "plateaustiefel", "plateaustiefel", "plateausandalette"
 ]
 
 accessories: List[str] = []
@@ -134,3 +135,17 @@ def get_clothing_item_type(string) -> WearType | None:
         return WearType.accessoire
     else:
         return None
+
+
+def get_clothing_item_type_for_arrays(first_part, second_part) -> WearType | None:
+    for token in second_part:
+        wearType = get_clothing_item_type(token)
+        if wearType is not None:
+            return wearType
+
+    for token in first_part:
+        wearType = get_clothing_item_type(token)
+        if wearType is not None:
+            return wearType
+
+    return None
