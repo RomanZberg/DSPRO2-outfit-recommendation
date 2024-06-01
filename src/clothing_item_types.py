@@ -26,7 +26,7 @@ innerwear_en: List[str] = [
     "undershirt", "tank top", "camisole", "thermal shirt",
     "sleeveless shirt", "bodysuit", "base layer", "sports bra",
     "crop top", "tube top", "singlet", "vest", "henley",
-    "polo shirt", "muscle shirt", "jersey", "shirt", "dress", "bralette", "blouse", "shirt",
+    "polo shirt", "muscle shirt", "jersey", "shirt", "bralette", "blouse", "shirt",
     "sleeve"
 ]
 
@@ -48,7 +48,7 @@ accessories_de: List[str] = [
     'kappe', 'haube', 'armband', 'brille', 'ohrringe', 'mütze', 'boa', 'schmuck', 'kopftuch',
     'reissverschluss', 'kopfhörer', 'halstuch', 'schulterpolster',
     'krawattennadel', 'tagesrucksack', 'ring', 'knopf', 'halskette', 'fliege', 'druckknöpfe',
-    'socken', 'haken und auge', 'lätzchen', 'bandanna', 'gürtel', 'ascot tie', 'manschettenknöpfe',
+    'haken und auge', 'lätzchen', 'bandanna', 'gürtel', 'ascot tie', 'manschettenknöpfe',
     'lendenschurz', 'strümpfe', 'hosenträger', 'träger', 'handtasche', 'ascot-krawatte', 'schal',
     'perücke', 'geldbörse', 'schleife', 'revers', 'baskenmütze', 'bandanna', 'sonnenbrille', 'schnalle',
     'klettverschluss', 'krawatte', 'manschette', 'hut', 'taschentuch', 'dessous', "handtasche", "sonnenbrille",

@@ -80,15 +80,20 @@ class PolyvoreOutfitDataset(torch.utils.data.Dataset):
         if img_path is not None:
             img_path = img_path.replace('raw/images', 'resized/256x256')
 
-        if img_path is None:
-            if self._empty_image_representation == "zero_matrix":
-                return torch.zeros(3, 224, 224)
-            elif self._empty_image_representation == "torch_empty":
-                return torch.empty(3, 224, 224)
+        try:
+            if img_path is None:
+                if self._empty_image_representation == "zero_matrix":
+                    return torch.zeros(3, 224, 224)
+                elif self._empty_image_representation == "torch_empty":
+                    return torch.empty(3, 224, 224)
+                else:
+                    raise Exception(
+                        "Wrong configuration value for key empty_image_representation in model_configuration")
             else:
-                raise Exception("Wrong configuration value for key empty_image_representation in model_configuration")
-        else:
-            return read_image(f'{self._dataset_folder_root_path}/{img_path}')
+                return read_image(f'{self._dataset_folder_root_path}/{img_path}')
+        except Exception as e:
+            print(f'Error with image with image path {img_path}')
+            raise e
 
     def __getitem__(self, index):
         outfit = self.feature_df.iloc[index]
@@ -145,7 +150,7 @@ class PolyvoreOutfitDataset(torch.utils.data.Dataset):
         return np.clip(img, 0, 1)
 
     @staticmethod
-    def show_batch(batch, classifications=None):
+    def show_batch(batch, classifications=None, save_to_folder=None):
         batch_features, batch_target_variables = batch
 
         number_of_outfits = batch_features.shape[0]
@@ -235,3 +240,9 @@ class PolyvoreOutfitDataset(torch.utils.data.Dataset):
 
                 # ax.axis('off')
             f.tight_layout()
+
+            if save_to_folder is not None:
+                f.savefig(save_to_folder)
+
+            plt.show(f)
+            plt.close(f)

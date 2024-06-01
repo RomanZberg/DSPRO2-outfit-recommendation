@@ -81,5 +81,14 @@ class OutfitClassifier(nn.Module):
         return self._trainable_model(batch_features)
 
     @staticmethod
-    def create_from_state_dict(self):
-        pass
+    def create_from_pth_file(pth_file_path, device):
+        checkpoint = torch.load(pth_file_path)
+        best_config = checkpoint['hyper_parameters']
+
+        return OutfitClassifier(
+            best_config['dino_architecture'],
+            best_config['drop_out'],
+            best_config['number_of_layers'],
+            best_config['hidden_neuron_count'],
+            device
+        )
