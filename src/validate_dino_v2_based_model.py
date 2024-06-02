@@ -8,7 +8,6 @@ from src.outfit_recommendation.metrics import get_metrics
 from src.outfit_recommendation.models.dino_v2_based import OutfitClassifier
 import torch
 
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -34,7 +33,8 @@ def validate_zalando_dataset_with_outfits_of_type(
         shuffle=True, num_workers=0
     )
 
-    return get_metrics(model, dataloader, f'zalando_dataset_outfit_type_{oufit_type}')
+    return get_metrics(model, dataloader, f'zalando_dataset_outfit_type_{oufit_type}', include_roc_curve=False,
+                       include_conf_matrix=False)
 
 
 def vaildate_on_zalando_dataset(model: OutfitClassifier, zalando_df: pd.DataFrame, dataset_folder_root_path):

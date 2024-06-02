@@ -53,7 +53,8 @@ def get_metrics(
             f'{prefix}_conf_mat': wandb.plot.confusion_matrix(
                 y_true=targets.cpu().numpy(),
                 preds=predictions.cpu().numpy(),
-                class_names=['bad outfit', 'good outfit']
+                class_names=['bad outfit', 'good outfit'],
+                title=f'{prefix}_conf_mat'
             )
         })
 
@@ -62,7 +63,8 @@ def get_metrics(
             f'{prefix}_roc_curve': wandb.plot.roc_curve(
                 y_true=targets.cpu().numpy(),
                 y_probas=list(map(lambda x: [1 - x, x], predictions_original.cpu().numpy())),
-                labels=['bad outfit', 'good outfit']
+                labels=['bad outfit', 'good outfit'],
+                title=f'{prefix}_roc_curve'
             )
         })
 
