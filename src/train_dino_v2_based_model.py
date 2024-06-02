@@ -5,9 +5,10 @@ import torch
 import wandb
 import optuna
 
+from src.outfit_recommendation.data_augmentation import get_data_augmentation_transforms
 from src.outfit_recommendation.datasets.image_based_datasets import PolyvoreOutfitDataset
+from src.outfit_recommendation.metrics import get_certainties_dict, get_metrics
 from src.outfit_recommendation.utility.EarlyStopper import EarlyStopper
-from src.outfit_recommendation.utility.MetricsCalculator import MetricsCalculator
 
 ssl._create_default_https_context = ssl._create_unverified_context
 import os
@@ -19,6 +20,7 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 
 from src.outfit_recommendation.models.dino_v2_based import OutfitClassifier
+from sklearn.metrics import f1_score
 
 
 def fix_random_seeds(seed=12345):
@@ -27,19 +29,21 @@ def fix_random_seeds(seed=12345):
     np.random.seed(seed)
 
 
-def train_loop(dataloader, feature_model, loss_fn, optimizer):
-    feature_model.train()
+def train_loop(dataloader, model, loss_fn, optimizer):
+    model.train()
+
+    targets = []
+    predictions = []
 
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
+
     running_loss = 0.0
     running_corrects = 0
-    feature_model.counter = 0
 
     for batch, (X, y) in tqdm(enumerate(dataloader), desc='Training', total=num_batches):
         # Compute prediction and loss
-        pred = feature_model(X)
-
+        pred = model(X)
         loss = loss_fn(pred, y)
 
         # Backpropagation
@@ -47,19 +51,27 @@ def train_loop(dataloader, feature_model, loss_fn, optimizer):
         loss.backward()
         optimizer.step()
 
+        # saving targets and predictions for later to calculate f1 score
+        targets.extend(y.squeeze(1).cpu().to(int).numpy())
+        predictions.extend(pred.squeeze(1).round().cpu().to(int).numpy())
+
         # Statistics
         running_loss += loss.item()
         running_corrects += (pred.round() == y).type(torch.float).sum().item()
 
     epoch_loss = running_loss / num_batches
     epoch_acc = running_corrects / size
+    epoch_f1_score = f1_score(y_true=targets, y_pred=predictions)
 
-    return epoch_acc, epoch_loss
+    return epoch_acc, epoch_f1_score, epoch_loss
 
 
 @torch.inference_mode()
 def val_loop(dataloader, model, loss_fn):
     model.eval()
+
+    targets = []
+    predictions = []
 
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
@@ -71,153 +83,23 @@ def val_loop(dataloader, model, loss_fn):
             val_loss += loss_fn(pred, y).item()
             val_acc += (pred.round() == y).type(torch.float).sum().item()
 
+            # saving targets and predictions for later to calculate f1 score
+            targets.extend(y.squeeze(1).cpu().to(int).numpy())
+            predictions.extend(pred.squeeze(1).round().cpu().to(int).numpy())
+
     val_loss /= num_batches
     val_acc /= size
 
-    return val_acc, val_loss
+    epoch_f1_score = f1_score(y_true=targets, y_pred=predictions)
 
-
-def get_data_augmentation_transforms():
-    return {
-        'train': v2.Compose([
-            v2.PILToTensor(),
-            T.Resize(224, interpolation=T.InterpolationMode.BICUBIC, antialias=True),
-            v2.CenterCrop(224),
-            v2.RandomHorizontalFlip(),
-            v2.RandomPerspective(fill=255),
-            v2.RandomAffine(30, fill=255),
-            # v2.AutoAugment(v2.AutoAugmentPolicy.IMAGENET),
-            v2.ConvertImageDtype(torch.float32),
-            v2.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
-        ]),
-        'val': v2.Compose([
-            v2.PILToTensor(),
-            T.Resize(224, interpolation=T.InterpolationMode.BICUBIC, antialias=True),
-            v2.CenterCrop(224),
-            v2.ConvertImageDtype(torch.float32),
-            v2.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
-        ]),
-        'test': v2.Compose([
-            v2.PILToTensor(),
-            T.Resize(224, interpolation=T.InterpolationMode.BICUBIC, antialias=True),
-            v2.CenterCrop(224),
-            v2.ConvertImageDtype(torch.float32),
-            v2.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
-        ]),
-    }
-
-
-def get_certainties_dict(
-        targets,
-        predictions
-):
-    best_model_mean_certainty_of_predictions = MetricsCalculator.get_mean_certainty_of_predictions(
-        y_predict=predictions
-    )
-
-    best_model_mean_certainty_of_correct_predictions = MetricsCalculator.get_mean_certainty_of_correct_predictions(
-        y_true=targets,
-        y_predict=predictions
-    )
-
-    best_model_mean_certainty_of_wrong_predictions = MetricsCalculator.get_mean_certainty_of_wrong_predictions(
-        y_true=targets,
-        y_predict=predictions
-    )
-
-    best_model_mean_certainty_of_correctly_predicted_good_outfits = MetricsCalculator.get_mean_certainty_of_correctly_predicted_good_outfits(
-        y_true=targets,
-        y_predict=predictions
-    )
-
-    best_model_mean_certainty_of_correctly_predicted_bad_outfits = MetricsCalculator.get_mean_certainty_of_correctly_predicted_bad_outfits(
-        y_true=targets,
-        y_predict=predictions
-    )
-
-    best_model_mean_certainty_of_wrong_predicted_good_outfits = MetricsCalculator.get_mean_certainty_of_wrong_predicted_good_outfits(
-        y_true=targets,
-        y_predict=predictions
-    )
-
-    best_model_mean_certainty_of_wrong_predicted_bad_outfits = MetricsCalculator.get_mean_certainty_of_wrong_predicted_bad_outfits(
-        y_true=targets,
-        y_predict=predictions
-    )
-
-    certainties_dict = {}
-
-    if best_model_mean_certainty_of_predictions is not None:
-        certainties_dict[
-            'best_model_mean_certainty_of_predictions'
-        ] = best_model_mean_certainty_of_predictions.item()
-
-    if best_model_mean_certainty_of_correct_predictions is not None:
-        certainties_dict[
-            'best_model_mean_certainty_of_correct_predictions'
-        ] = best_model_mean_certainty_of_correct_predictions.item()
-
-    if best_model_mean_certainty_of_wrong_predictions is not None:
-        certainties_dict[
-            'best_model_mean_certainty_of_wrong_predictions'
-        ] = best_model_mean_certainty_of_wrong_predictions.item()
-
-    if best_model_mean_certainty_of_correctly_predicted_good_outfits is not None:
-        certainties_dict[
-            'best_model_mean_certainty_of_correctly_predicted_good_outfits'
-        ] = best_model_mean_certainty_of_correctly_predicted_good_outfits.item()
-
-    if best_model_mean_certainty_of_correctly_predicted_bad_outfits is not None:
-        certainties_dict[
-            'best_model_mean_certainty_of_correctly_predicted_bad_outfits'
-        ] = best_model_mean_certainty_of_correctly_predicted_bad_outfits.item()
-
-    if best_model_mean_certainty_of_wrong_predicted_good_outfits is not None:
-        certainties_dict[
-            'best_model_mean_certainty_of_wrong_predicted_good_outfits'
-        ] = best_model_mean_certainty_of_wrong_predicted_good_outfits.item()
-
-    if best_model_mean_certainty_of_wrong_predicted_bad_outfits is not None:
-        certainties_dict[
-            'best_model_mean_certainty_of_wrong_predicted_bad_outfits'
-        ] = best_model_mean_certainty_of_wrong_predicted_bad_outfits.item()
-
-    return certainties_dict
+    return val_acc, epoch_f1_score, val_loss
 
 
 @torch.inference_mode()
-def get_metrics(model, dataloader, loss_fn):
+def get_metrics_for_best_model(model, dataloader):
     model.eval()
 
-    num_batches = len(dataloader)
-
-    predictions = []
-    targets = []
-    predictions_original = []
-
-    with torch.no_grad():
-        for X, y in tqdm(dataloader, desc='Validation', total=num_batches):
-            pred = model(X)
-
-            targets.extend(y.squeeze(1).cpu().to(int).numpy())
-            predictions.extend(pred.squeeze(1).round().cpu().to(int).numpy())
-            predictions_original.extend(pred.squeeze(1).cpu().to(float).numpy())
-
-    targets = torch.tensor(targets)
-    predictions = torch.tensor(predictions)
-    predictions_original = torch.tensor(predictions_original)
-
-    return {
-        'conf_mat': wandb.plot.confusion_matrix(
-            y_true=targets.cpu().numpy(),
-            preds=predictions.cpu().numpy(),
-            class_names=['bad outfit', 'good outfit']
-        ),
-        **get_certainties_dict(
-            targets=targets,
-            predictions=predictions_original
-        )
-    }
+    return get_metrics(model, dataloader, 'best_model'),
 
 
 def train_model(config, data_transforms, dataloaders, device):
@@ -253,19 +135,21 @@ def train_model(config, data_transforms, dataloaders, device):
     for t in range(config['epochs']):
         print(f'Epoch {t + 1}\n-------------------------------')
 
-        train_acc, train_loss = train_loop(dataloaders['train'], outfit_classifier, loss_fn, optimizer)
+        train_acc, train_f1_score, train_loss = train_loop(dataloaders['train'], outfit_classifier, loss_fn, optimizer)
         scheduler.step()
 
-        val_acc, val_loss = val_loop(dataloaders['val'], outfit_classifier, loss_fn)
+        val_acc, val_f1_score, val_loss = val_loop(dataloaders['val'], outfit_classifier, loss_fn)
 
         wandb.log(
             {
-                'epoch': t,
+                'epoch': t + 1,
                 'lr': optimizer.param_groups[0]["lr"],
                 'training_accuracy': train_acc,
+                'training_f1_score': train_f1_score,
                 'training_loss': train_loss,
                 'validation_accuracy': val_acc,
-                'validation_loss': val_loss
+                'validation_loss': val_loss,
+                'validation_f1_score': val_f1_score,
             }
         )
 
@@ -310,7 +194,7 @@ def train_model(config, data_transforms, dataloaders, device):
     model_inf.eval()
 
     wandb.log({
-        **get_metrics(model_inf, dataloaders['val'], loss_fn)
+        **get_metrics_for_best_model(model_inf, dataloaders['val'])
     })
 
     wandb.save('dino_classifier_ckpt.pth')
@@ -341,6 +225,8 @@ def main(
     if debug:
         training_df = training_df.head(100)
 
+    # split training dataset in train and test => training dataset 80% of all data 25% of 80% = 20
+    # therefore the validation set is 20% and the training set is 60& of the whole dataset
     train, validation = train_test_split(
         training_df, test_size=0.25, random_state=42,
         stratify=training_df['valid_outfit']

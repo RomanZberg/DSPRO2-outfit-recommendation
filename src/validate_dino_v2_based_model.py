@@ -1,56 +1,15 @@
 import pandas as pd
 import wandb
 from torch.utils.data import DataLoader
-from tqdm import tqdm
 
+from src.outfit_recommendation.data_augmentation import get_data_augmentation_transforms
 from src.outfit_recommendation.datasets.image_based_datasets import PolyvoreOutfitDataset
+from src.outfit_recommendation.metrics import get_metrics
 from src.outfit_recommendation.models.dino_v2_based import OutfitClassifier
 import torch
-from sklearn.metrics import f1_score
-from src.train_dino_v2_based_model import get_data_augmentation_transforms
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-@torch.inference_mode()
-def get_metrics(model, dataloader, prefix):
-    model.eval()
-
-    num_batches = len(dataloader)
-    size = len(dataloader.dataset)
-
-    predictions = []
-    targets = []
-    predictions_original = []
-
-    val_acc = 0
-
-    with torch.no_grad():
-        for X, y in tqdm(dataloader, desc='Validation', total=num_batches):
-            pred = model(X)
-
-            targets.extend(y.squeeze(1).cpu().to(int).numpy())
-            predictions.extend(pred.squeeze(1).round().cpu().to(int).numpy())
-            predictions_original.extend(pred.squeeze(1).cpu().to(float).numpy())
-            val_acc += (pred.round() == y).type(torch.float).sum().item()
-
-    val_acc /= size
-
-    targets = torch.tensor(targets)
-    predictions = torch.tensor(predictions)
-    predictions_original = torch.tensor(predictions_original)
-
-    model_f1_score = f1_score(targets.cpu().numpy(), predictions.cpu().numpy())
-
-    return {
-        f'{prefix}_f1_score': model_f1_score,
-        f'{prefix}_accuracy': val_acc
-        # f'{prefix}_conf_mat': wandb.plot.confusion_matrix(
-        #     y_true=targets.cpu().numpy(),
-        #     preds=predictions.cpu().numpy(),
-        #     class_names=['bad outfit', 'good outfit']
-        # )
-    }
 
 
 def validate_zalando_dataset_with_outfits_of_type(
@@ -139,6 +98,11 @@ def main(
         polyvore_datasets_folder_root_path,
         zalando_datasets_folder_root_path
 ):
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="ReWear - Outfit Recommender (DSPRO2) Dino v2 based testing",
+    )
+
     model = OutfitClassifier.create_from_pth_file(pth_file, device).eval()
 
     polyvore_test_dataset_df = pd.read_parquet(testing_dataset_path)
@@ -158,7 +122,13 @@ def main(
         **result_dict_zalando
     }
 
+    wandb.log(
+        log_dict
+    )
+
     print(log_dict)
+
+    wandb.finish()
 
 
 if __name__ == "__main__":
