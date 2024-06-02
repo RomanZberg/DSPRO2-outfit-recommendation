@@ -61,7 +61,7 @@ def get_metrics(
         ouput_dict.update({
             f'{prefix}_roc_curve': wandb.plot.roc_curve(
                 y_true=targets.cpu().numpy(),
-                y_probas=predictions_original.cpu().numpy(),
+                y_probas=list(map(lambda x: [1 - x, x], predictions_original.cpu().numpy())),
                 labels=['bad outfit', 'good outfit']
             )
         })
