@@ -30,6 +30,7 @@ torchvision = "*"
 wandb = "*"
 ray = {extras = ["tune"], version = "*"}
 optuna = "*"
+imblearn = "*"
 
 [dev-packages]
 
