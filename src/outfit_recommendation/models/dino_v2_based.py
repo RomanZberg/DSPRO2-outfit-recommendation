@@ -85,10 +85,14 @@ class OutfitClassifier(nn.Module):
         checkpoint = torch.load(pth_file_path, map_location=device)
         best_config = checkpoint['hyper_parameters']
 
-        return OutfitClassifier(
+        model = OutfitClassifier(
             best_config['dino_architecture'],
             best_config['drop_out'],
             best_config['number_of_layers'],
             best_config['hidden_neuron_count'],
             device
         )
+
+        model.load_state_dict(checkpoint['state_dict'])
+
+        return model

@@ -48,34 +48,34 @@ def get_metrics(
         f'{prefix}_accuracy': val_acc
     }
 
-    # if include_conf_matrix:
-    #     ouput_dict.update({
-    #         f'{prefix}_conf_mat': wandb.plot.confusion_matrix(
-    #             y_true=targets.cpu().numpy(),
-    #             preds=predictions.cpu().numpy(),
-    #             class_names=['bad outfit', 'good outfit'],
-    #             title=f'{prefix}_conf_mat'
-    #         )
-    #     })
-    #
-    # if include_roc_curve:
-    #     ouput_dict.update({
-    #         f'{prefix}_roc_curve': wandb.plot.roc_curve(
-    #             y_true=targets.cpu().numpy(),
-    #             y_probas=list(map(lambda x: [1 - x, x], predictions_original.cpu().numpy())),
-    #             labels=['bad outfit', 'good outfit'],
-    #             title=f'{prefix}_roc_curve'
-    #         )
-    #     })
-    #
-    # if include_model_certainties:
-    #     ouput_dict.update({
-    #         **get_certainties_dict(
-    #             targets=targets,
-    #             predictions=predictions_original,
-    #             prefix=prefix
-    #         )
-    #     })
+    if include_conf_matrix:
+        ouput_dict.update({
+            f'{prefix}_conf_mat': wandb.plot.confusion_matrix(
+                y_true=targets.cpu().numpy(),
+                preds=predictions.cpu().numpy(),
+                class_names=['bad outfit', 'good outfit'],
+                title=f'{prefix}_conf_mat'
+            )
+        })
+
+    if include_roc_curve:
+        ouput_dict.update({
+            f'{prefix}_roc_curve': wandb.plot.roc_curve(
+                y_true=targets.cpu().numpy(),
+                y_probas=list(map(lambda x: [1 - x, x], predictions_original.cpu().numpy())),
+                labels=['bad outfit', 'good outfit'],
+                title=f'{prefix}_roc_curve'
+            )
+        })
+
+    if include_model_certainties:
+        ouput_dict.update({
+            **get_certainties_dict(
+                targets=targets,
+                predictions=predictions_original,
+                prefix=prefix
+            )
+        })
 
     return ouput_dict
 
