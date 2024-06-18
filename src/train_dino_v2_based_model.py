@@ -103,14 +103,6 @@ def get_metrics_for_best_model(model, dataloader):
 
 
 def train_model(config, data_transforms, dataloaders, device):
-    outfit_classifier = OutfitClassifier(
-        config['dino_architecture'],
-        config['drop_out'],
-        config['number_of_layers'],
-        config['hidden_neuron_count'],
-        device
-    )
-
     config['data_augmentation'] = data_transforms
 
     wandb.init(
@@ -120,19 +112,27 @@ def train_model(config, data_transforms, dataloaders, device):
         config=config
     )
 
-    optimizer = torch.optim.Adam(
-        outfit_classifier.parameters(),
-        lr=config['init_lr']
+    outfit_classifier = OutfitClassifier(
+        wandb.config['dino_architecture'],
+        wandb.config['drop_out'],
+        wandb.config['number_of_layers'],
+        wandb.config['hidden_neuron_count'],
+        device
     )
 
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, config['epochs'], eta_min=0)
+    optimizer = torch.optim.Adam(
+        outfit_classifier.parameters(),
+        lr=wandb.config['init_lr']
+    )
+
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, wandb.config['epochs'], eta_min=0)
 
     loss_fn = nn.BCELoss()
     early_stopper = EarlyStopper(patience=5, min_delta=0)
 
     best_acc = 0.0
     best_acc_loss = np.inf
-    for t in range(config['epochs']):
+    for t in range(wandb.config['epochs']):
         print(f'Epoch {t + 1}\n-------------------------------')
 
         train_acc, train_f1_score, train_loss = train_loop(dataloaders['train'], outfit_classifier, loss_fn, optimizer)
@@ -162,7 +162,7 @@ def train_model(config, data_transforms, dataloaders, device):
                 'scheduler': scheduler.state_dict(),
                 'best_acc': best_acc,
                 'best_loss': best_acc_loss,
-                'hyper_parameters': config
+                'hyper_parameters': wandb.config
             }
             torch.save(save_dict, os.path.join(wandb.run.dir, 'dino_classifier_ckpt.pth'))
 
@@ -209,10 +209,12 @@ def main(
         datasets_folder_root_path,
         empty_image_representation,
         training_dataset_path,
+        validation_dataset_path,
         testing_dataset_path,
+        seed,
         debug=False
 ):
-    fix_random_seeds()
+    fix_random_seeds(seed)
     data_transforms = get_data_augmentation_transforms()
 
     # Set a device
@@ -222,20 +224,18 @@ def main(
         training_dataset_path,
     )
 
-    if debug:
-        training_df = training_df.head(100)
-
-    # split training dataset in train and test => training dataset 80% of all data 25% of 80% = 20
-    # therefore the validation set is 20% and the training set is 60& of the whole dataset
-    train, validation = train_test_split(
-        training_df, test_size=0.25, random_state=42,
-        stratify=training_df['valid_outfit']
+    validation_df = pd.read_parquet(
+        validation_dataset_path
     )
 
+    if debug:
+        training_df = training_df.head(100)
+        validation_df = validation_df.head(100)
+
     image_datasets = {
-        'train': PolyvoreOutfitDataset(train, data_transforms['train'], 'training',
+        'train': PolyvoreOutfitDataset(training_df, data_transforms['train'], 'training',
                                        empty_image_representation, datasets_folder_root_path, device),
-        'val': PolyvoreOutfitDataset(validation, data_transforms['val'], 'validation',
+        'val': PolyvoreOutfitDataset(validation_df, data_transforms['val'], 'validation',
                                      empty_image_representation, datasets_folder_root_path, device),
     }
 
@@ -247,14 +247,16 @@ def main(
         config = {
             'dino_architecture': 'small',
             'batch_size': batch_size,
-            'drop_out': 0,
+            'drop_out': trial.suggest_categorical("hidden_neuron_count", [0.1, 0.2, 0.3]),
             'number_of_layers': trial.suggest_categorical("number_of_layers", range(2, 6)),
-            'hidden_neuron_count': trial.suggest_categorical("hidden_neuron_count", [45, 64, 128, 256]),
+            'hidden_neuron_count': trial.suggest_categorical("hidden_neuron_count", [64, 128, 256, 512]),
             'init_lr': 10 ** (-4),
             'epochs': epochs,
             'empty_image_representation': empty_image_representation,
             'training_dataset_path': training_dataset_path,
-            'testing_dataset_path': testing_dataset_path
+            'testing_dataset_path': testing_dataset_path,
+            'random_seed': seed,
+            'debug': debug
         }
 
         return train_model(config, data_transforms, dataloaders, device)
@@ -269,7 +271,17 @@ if __name__ == "__main__":
         batch_size=32,
         datasets_folder_root_path='../datasets',
         empty_image_representation='zero_matrix',  # zero_matrix, torch_empty
-        training_dataset_path='../datasets/imageBasedModel/polyvore/median_threshold_eb26e630100b98397deda54fa4a0bb95929479bc30e83cbfa72424b7c1e6e178/polyvore_train_d9a4be80b78df9a5ef8b6682f5785becc175d5c3ff17cf7428574485e72c62f8.parquet',
-        testing_dataset_path='../datasets/imageBasedModel/polyvore/median_threshold_eb26e630100b98397deda54fa4a0bb95929479bc30e83cbfa72424b7c1e6e178/polyvore_test_6b046cdf467634343bb4fdd8fbdbe02a3746645c7c9108242228da408c97f435.parquet',
+        training_dataset_path='../datasets/imageBasedModel/polyvore'
+                              '/median_threshold_eb26e630100b98397deda54fa4a0bb95929479bc30e83cbfa72424b7c1e6e178'
+                              '/polyvore_train_4b80b4128de58ff7338b80300ba8d83cb3b484411b467c99fa5261585a26e9ee'
+                              '.parquet',
+        validation_dataset_path='../datasets/imageBasedModel/polyvore'
+                                '/median_threshold_eb26e630100b98397deda54fa4a0bb95929479bc30e83cbfa72424b7c1e6e178'
+                                '/polyvore_validate_f8696e0ecb9cc043aa42bf403e87dd244bbc3c6f101c97e6d84e8aff4c71404e'
+                                '.parquet',
+        testing_dataset_path='../datasets/imageBasedModel/polyvore'
+                             '/median_threshold_eb26e630100b98397deda54fa4a0bb95929479bc30e83cbfa72424b7c1e6e178'
+                             '/polyvore_test_6b046cdf467634343bb4fdd8fbdbe02a3746645c7c9108242228da408c97f435.parquet',
+        seed=12345,
         debug=False
     )
