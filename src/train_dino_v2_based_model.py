@@ -247,7 +247,7 @@ def main(
         config = {
             'dino_architecture': 'small',
             'batch_size': batch_size,
-            'drop_out': trial.suggest_categorical("hidden_neuron_count", [0.1, 0.2, 0.3]),
+            'drop_out': trial.suggest_categorical("drop_out", [0.1, 0.2, 0.3]),
             'number_of_layers': trial.suggest_categorical("number_of_layers", range(2, 6)),
             'hidden_neuron_count': trial.suggest_categorical("hidden_neuron_count", [64, 128, 256, 512]),
             'init_lr': 10 ** (-4),
