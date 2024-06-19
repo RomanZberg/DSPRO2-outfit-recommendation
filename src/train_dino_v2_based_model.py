@@ -99,7 +99,7 @@ def val_loop(dataloader, model, loss_fn):
 def get_metrics_for_best_model(model, dataloader):
     model.eval()
 
-    return get_metrics(model, dataloader, 'best_model'),
+    return get_metrics(model, dataloader, 'best_model')
 
 
 def train_model(config, data_transforms, dataloaders, device):
@@ -131,6 +131,8 @@ def train_model(config, data_transforms, dataloaders, device):
     early_stopper = EarlyStopper(patience=5, min_delta=0)
 
     best_acc = 0.0
+    best_f1_score = 0.0
+    best_f1_score_loss = np.inf
     best_acc_loss = np.inf
     for t in range(wandb.config['epochs']):
         print(f'Epoch {t + 1}\n-------------------------------')
@@ -153,16 +155,15 @@ def train_model(config, data_transforms, dataloaders, device):
             }
         )
 
-        if (val_acc == best_acc and val_loss < best_acc_loss) or (val_acc > best_acc):
-            best_acc, best_acc_loss = val_acc, val_loss
+        if (val_f1_score == best_f1_score and val_loss < best_f1_score_loss) or (val_f1_score > best_f1_score):
+            best_f1_score, best_f1_score_loss = val_f1_score, val_loss
             save_dict = {
                 'epoch': t + 1,
                 'state_dict': outfit_classifier.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'scheduler': scheduler.state_dict(),
-                'best_acc': best_acc,
                 'best_loss': best_acc_loss,
-                'hyper_parameters': wandb.config
+                'hyper_parameters': dict(wandb.config)
             }
             torch.save(save_dict, os.path.join(wandb.run.dir, 'dino_classifier_ckpt.pth'))
 
