@@ -28,11 +28,11 @@ Then upload the requirements.txt file to gpuhub.
 Open terminal and execute the following commands.
 
 ```
-pip install -r requirements.txt 
+cd <project-root> 
 ```
 
 ```
-cd <project-root> 
+pip install -r requirements.txt 
 ```
 
 ```
