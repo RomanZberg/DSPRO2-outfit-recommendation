@@ -128,7 +128,7 @@ def train_model(config, data_transforms, dataloaders, device):
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, wandb.config['epochs'], eta_min=0)
 
     loss_fn = nn.BCELoss()
-    early_stopper = EarlyStopper(patience=5, min_delta=0)
+    early_stopper = EarlyStopper(patience=7, min_delta=0)
 
     best_acc = 0.0
     best_f1_score = 0.0
