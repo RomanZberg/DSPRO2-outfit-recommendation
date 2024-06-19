@@ -201,7 +201,7 @@ def train_model(config, data_transforms, dataloaders, device):
     wandb.save('dino_classifier_ckpt.pth')
     wandb.finish()
 
-    return best_acc
+    return best_f1_score
 
 
 def main(
