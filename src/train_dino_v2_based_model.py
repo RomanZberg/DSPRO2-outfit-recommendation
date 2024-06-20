@@ -255,6 +255,7 @@ def main(
             'epochs': epochs,
             'empty_image_representation': empty_image_representation,
             'training_dataset_path': training_dataset_path,
+            'validation_dataset_path': validation_dataset_path,
             'testing_dataset_path': testing_dataset_path,
             'random_seed': seed,
             'debug': debug
