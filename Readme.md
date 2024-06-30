@@ -8,6 +8,7 @@
 
 1. Download the dataset from ```<path-to-be-defined>``` and unzip it in the folder <project-root>/datasets
 2. Execute ```pipenv install``` in the project root
+3. Download the dataset from: 
 
 ## How to train the model on GPU hub
 
