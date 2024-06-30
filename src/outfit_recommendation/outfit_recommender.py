@@ -1,5 +1,7 @@
 import os
 
+import numpy
+
 from src.clothing_item_types import WearType
 from src.outfit_recommendation.data_augmentation import get_data_augmentation_transforms
 from src.outfit_recommendation.models.dino_v2_based import OutfitClassifier
@@ -41,14 +43,33 @@ class OutfitRecommender:
         return potential_outfit_df
 
     def get_good_outfits(self, model, clothing_items_df, n, save_outfits_to_folder_path=None, random_state=123):
-        potential_outfits_df = self._get_potential_outfits(clothing_items_df, n, random_state)
 
-        self.classify_outfits(
-            potential_outfits_df, model,
-            save_classifications_to_folder_path=save_outfits_to_folder_path
-        )
+        enough_good_outfits = False
+        generated_good_outfits = 0
+        good_outfits_dfs = []
+        random_counter = 0
 
-        pass
+        number_of_potential_outfits_to_generate = n
+
+        while not enough_good_outfits:
+            potential_outfits_df = self._get_potential_outfits(clothing_items_df,
+                                                               number_of_potential_outfits_to_generate,
+                                                               random_state + random_counter)
+
+            classifications = self.classify_outfits(
+                potential_outfits_df, model,
+                save_classifications_to_folder_path=save_outfits_to_folder_path
+            )
+
+            good_outfits_binary_array = (classifications >= 0.5)
+            generated_good_outfits += np.count_nonzero(good_outfits_binary_array == 1)
+
+            enough_good_outfits = generated_good_outfits >= n
+            good_outfits_dfs.append(potential_outfits_df.loc[numpy.where(good_outfits_binary_array == 1)])
+            random_counter += 1
+            number_of_potential_outfits_to_generate = n - generated_good_outfits
+
+        return pd.concat(good_outfits_dfs).head(n)
 
     def classify_outfits(self, potential_outfit_dataframe: pd.DataFrame, model: OutfitClassifier,
                          save_classifications_to_folder_path=None):
@@ -96,7 +117,7 @@ class OutfitRecommender:
                     )
                 batch_outfits = torch.tensor([]).to(self._device)
 
-        return predictions
+        return np.array(predictions)
 
     def _get_image(self, img_path):
         if img_path is not None:
@@ -195,7 +216,8 @@ class OutfitRecommender:
                 ax = axarr[cloting_item_axis_index]
                 ax.text(0.5, 0.5, 'Good Outfit %\n', horizontalalignment='center', transform=ax.transAxes,
                         weight='bold', color='white', fontsize=label_font_size)
-                ax.text(0.5, 0.5 - 0.05, round(predictions_probas[batch_item_index], 2), horizontalalignment='center',
+                ax.text(0.5, 0.5 - 0.05, round(predictions_probas[batch_item_index] * 100, 3),
+                        horizontalalignment='center',
                         transform=ax.transAxes,
                         weight='bold', color='white', fontsize=label_font_size)
 
