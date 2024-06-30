@@ -6,7 +6,7 @@
 
 ## Steps after cloning the repository
 
-1. Download the dataset from ```<path-to-be-defined>``` and unzip it in the folder <project-root>/datasets
+1. Download the dataset from [here](https://hsluzern-my.sharepoint.com/:u:/g/personal/roman_zberg_stud_hslu_ch/EaHfkzUG6bxAjaDgbnMBjPUBtHMOY3lF5J_W4t7Wg4l4qg?e=e8JH4S) and unzip it in the folder <project-root>/datasets
 2. Execute ```pipenv install``` in the project root
 
 ## How to train the model on GPU hub
